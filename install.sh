@@ -5,9 +5,6 @@ set -euo pipefail
 
 SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-# Shared environment variables for all scripts
-export NETWORK_DOMAIN="default.org"
-
 source "$SCRIPT_DIR/shell/.exports"
 
 # --- Helper Functions for Locks ---
@@ -53,20 +50,11 @@ $SCRIPT_DIR/scripts/install-packages.sh
 echo "Running Node.js environment setup script..."
 $SCRIPT_DIR/scripts/setup-node.sh
 
-echo "Running Claude Code installation script..."
-$SCRIPT_DIR/scripts/install-claude-code.sh
-
 echo "Running UV (Python Environment) setup script..."
 $SCRIPT_DIR/scripts/setup-uv.sh
 
 echo "Running Golang setup script..."
 $SCRIPT_DIR/scripts/setup-go.sh
-
-echo "Running kubectl setup script..."
-$SCRIPT_DIR/scripts/setup-kubectl.sh
-
-echo "Running Temporal CLI installation script..."
-$SCRIPT_DIR/scripts/install-temporal.sh
 
 echo "Running opencode-ai installation script..."
 $SCRIPT_DIR/scripts/install-opencode.sh

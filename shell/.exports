@@ -1,4 +1,13 @@
 # Set a consolidated PATH, referencing all configured local bins
-export PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$PATH
+add_to_path() {
+    if [ -d "$1" ] && [[ ":$PATH:" != *":$1:"* ]]; then
+        export PATH="$1:$PATH"
+    fi
+}
+
+add_to_path "$HOME/.local/bin"
+add_to_path "$HOME/.local/go/bin"
+add_to_path "$HOME/.dotfiles/bin"
+
 export BUN_INSTALL="$HOME/.bun"
 export NVM_DIR="$HOME/.nvm"

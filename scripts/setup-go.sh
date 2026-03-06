@@ -6,7 +6,7 @@ set -euo pipefail
 SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 source "$SCRIPT_DIR/lib/common.sh"
 
-GO_VERSION="1.25.4"
+GO_VERSION=$(curl -sL https://go.dev/VERSION?m=text | head -n1 | sed 's/^go//')
 GO_INSTALL_DIR="$HOME/.local/go"
 GO_BIN="$GO_INSTALL_DIR/bin/go"
 EXPECTED_VERSION_STR="go${GO_VERSION}"
@@ -38,7 +38,7 @@ if [ "$NEEDS_INSTALL" = true ]; then
     mkdir -p "$HOME/.local"
 
     GO_TAR_GZ="/tmp/go${GO_VERSION}.linux-amd64.tar.gz"
-    DOWNLOAD_URL="https://artifact.default.org/artifactory/generic-url-mirror/dl.google.com/go/go${GO_VERSION}.linux-amd64.tar.gz"
+    DOWNLOAD_URL="https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz"
 
     # Download if not cached in /tmp
     if [ ! -f "$GO_TAR_GZ" ]; then
@@ -50,23 +50,8 @@ if [ "$NEEDS_INSTALL" = true ]; then
     fi
 
     echo "Extracting..."
-    sudo tar -C "$HOME/.local" -xzf "$GO_TAR_GZ"
-    sudo rm "$GO_TAR_GZ"
+    tar -C "$HOME/.local" -xzf "$GO_TAR_GZ"
+    rm "$GO_TAR_GZ"
 
     echo "Installation complete."
-fi
-
-# Configure Go proxy and private modules
-export PATH="$GO_INSTALL_DIR/bin:$PATH"
-GO_PROXY="https://artifact.default.org/artifactory/api/go/go"
-GO_PRIVATE="git.${NETWORK_DOMAIN}/*"
-
-if [ "$(go env GOPROXY)" != "$GO_PROXY" ]; then
-    echo "Setting Go proxy..."
-    go env -w GOPROXY="$GO_PROXY"
-fi
-
-if [ "$(go env GOPRIVATE)" != "$GO_PRIVATE" ]; then
-    echo "Setting Go private module registry..."
-    go env -w GOPRIVATE="$GO_PRIVATE"
 fi

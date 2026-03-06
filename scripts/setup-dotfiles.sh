@@ -15,12 +15,8 @@ cp $SCRIPT_DIR/../shell/.aliases $HOME/.aliases
 # Git configuration
 cp $CONFIG_DIR/git/.gitconfig $HOME/.gitconfig
 
-# Claude configuration
-mkdir -p $HOME/.claude
-cp -r $CONFIG_DIR/claude/* $HOME/.claude/
-
-# OpenCode configuration - symlink Claude Code commands and skills
-mkdir -p "$HOME/.config/opencode/commands"
-mkdir -p "$HOME/.config/opencode/skills"
+# OpenCode configuration - remove existing and copy fresh to ensure updates are applied
+rm -rf "$HOME/.config/opencode"
+mkdir -p "$HOME/.config/opencode"
 cp -r $CONFIG_DIR/opencode/* $HOME/.config/opencode/
 
