@@ -6,23 +6,18 @@ This repository contains scripts to automatically set up a complete development 
 
 The scripts in this repository will:
 
-1. Install essential system packages (nano, npm)
+1. Install essential system packages (nano, git, curl, wget, etc.)
 2. Set up Node.js environment with:
-   - Global npm configuration
-   - n (Node.js version manager)
+   - nvm (Node.js version manager)
    - Bun JavaScript runtime
-   - Claude Code CLI tool
 3. Install and configure UV (Python environment manager)
 4. Install and configure Go language
-5. Install and configure kubectl (Kubernetes CLI)
-6. Install Temporal CLI
-7. Link dotfiles and custom configurations:
+5. Install OpenCode CLI and LiteLLM plugin
+6. Link dotfiles and custom configurations:
    - .npmrc
-   - .bunfig.toml
-   - uv.toml
    - .gitconfig
    - Custom bashrc and profile configurations
-8. Synchronize utility scripts to ~/.dotfiles for easy access
+7. Synchronize utility scripts to ~/.dotfiles for easy access
 
 ## How to Use
 
@@ -36,7 +31,11 @@ This script will:
 1. Wait for any existing package manager locks to be released
 2. Execute all setup scripts in the correct order
 3. Link dotfiles and custom configurations
-4. Append custom environment configurations to your shell profile
+
+For OpenCode-only setup:
+```bash
+./setup-opencode.sh
+```
 
 ## Script Breakdown
 
@@ -44,15 +43,14 @@ This script will:
 - `install.sh`: Main orchestrator script that runs all other scripts in order
 
 ### Setup Scripts in `scripts/` directory:
-- `install-npm-packages.sh`: Installs global npm packages
 - `install-packages.sh`: Installs system packages
-- `install-temporal.sh`: Installs Temporal CLI
 - `setup-dotfiles.sh`: Links dotfiles and custom configurations
-- `setup-go.sh`: Installs and configures Go
-- `setup-kubectl.sh`: Installs kubectl and sets up kubeconfig
-- `setup-node.sh`: Sets up Node.js environment
+- `setup-node.sh`: Sets up Node.js environment (nvm)
 - `setup-uv.sh`: Installs UV for Python environment management
+- `setup-go.sh`: Installs and configures Go
 - `sync-folders.sh`: Synchronizes utility scripts to ~/.dotfiles
+- `install-opencode.sh`: Installs OpenCode CLI
+- `setup-bun.sh`: Standalone Bun setup (not called by install.sh)
 
 ### Utility Scripts in `bin/` directory:
 - `jwt-decode`: Utility script for decoding JWT tokens
@@ -65,33 +63,70 @@ All scripts are designed to be idempotent. This means you can run them multiple 
 ## Directory Structure
 
 ```
-├── bin/                 # Utility scripts that get synchronized to ~/.dotfiles/bin
-│   ├── jwt-decode       # JWT decoding utility
-│   └── jwt-encode       # JWT encoding utility
-├── scripts/             # All setup and installation scripts
-│   ├── install-npm-packages.sh
-│   ├── install-packages.sh
-│   ├── install-temporal.sh
-│   ├── setup-dotfiles.sh
-│   ├── setup-go.sh
-│   ├── setup-kubectl.sh
-│   ├── setup-node.sh
-│   ├── setup-uv.sh
-│   └── sync-folders.sh
-├── shell/               # Shell configuration files
-│   ├── .aliases         # Custom shell aliases
-│   └── .exports         # Environment variables and PATH configurations
-├── .bashrc              # Bash configuration (sources shell/.exports and shell/.aliases)
-├── .gitconfig           # Git configuration
-├── .npmrc               # npm configuration
-├── .profile             # Profile configuration
-└── install.sh           # Main installation script
+├── bin/                      # Utility scripts synchronized to ~/.dotfiles/bin
+│   ├── jwt-decode            # JWT decoding utility
+│   └── jwt-encode            # JWT encoding utility
+├── scripts/                  # All setup and installation scripts
+│   ├── lib/                  # Shared utility library
+│   │   └── common.sh         # Common functions (pkg_installed, cmd_available, etc.)
+│   ├── install-packages.sh   # System packages
+│   ├── install-opencode.sh  # OpenCode CLI
+│   ├── setup-dotfiles.sh    # Dotfiles linking
+│   ├── setup-go.sh          # Go installation
+│   ├── setup-node.sh        # Node.js (nvm)
+│   ├── setup-uv.sh          # UV Python manager
+│   ├── setup-bun.sh         # Bun runtime (standalone)
+│   └── sync-folders.sh      # Sync bins to ~/.dotfiles
+├── config/                   # Configuration files
+│   ├── git/                 # Git configuration
+│   ├── opencode/            # OpenCode configuration
+│   │   ├── opencode.json    # OpenCode plugins config
+│   │   └── litellm.json     # LiteLLM auth template
+│   └── shell/               # Shell configs
+├── shell/                    # Shell source files
+│   ├── .aliases             # Custom shell aliases
+│   └── .exports             # Environment variables and PATH
+├── .bashrc                  # Bash configuration
+├── .gitconfig               # Git configuration
+├── .npmrc                   # npm configuration
+├── .profile                 # Profile configuration
+└── install.sh              # Main installation script
 ```
+
+## Key Configurations
+
+### Git
+- User: jason.cheng.ky
+- Email: jason.cheng.ky@default.org
+
+### Path Configuration
+All local bins are consolidated in PATH via `shell/.exports`:
+- `~/.local/bin`
+- `~/.dotfiles/bin`
+- `~/.local/go/bin`, `~/.go/bin`
+- `~/.node_modules/bin`, `~/.nvm`, `~/.bun/bin`
+
+### Aliases
+- `gst` - `git status`
+- `k` - `kubectl`
+- `serve` - `uv run -- python -m http.server`
+
+## OpenCode Integration
+
+- OpenCode CLI is installed via `install-opencode.sh` (requires Bun)
+- LiteLLM plugin provides authentication to self-hosted LiteLLM instances
+- Configuration: Edit `~/.config/opencode/litellm.json` with your LiteLLM credentials
 
 ## Custom Configurations
 
-- `shell/.aliases`: Contains custom shell aliases like `gst` for `git status`
+- `shell/.aliases`: Contains custom shell aliases
 - `shell/.exports`: Contains environment variables and PATH configurations
 - All custom configurations are automatically sourced during shell initialization
 
 After running the setup, restart your terminal or run `source ~/.profile` to load all configurations.
+
+## Development
+
+- **Pre-commit hook**: Runs `shellcheck` on all shell scripts. Install with `sudo apt-get install shellcheck`
+- **Syntax check**: Run `bash -n script.sh` to verify script syntax
+- **Idempotency**: All scripts should be safe to run multiple times without side effects

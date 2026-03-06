@@ -26,15 +26,13 @@ This is a dotfiles repository that automates setting up a complete development e
 ./scripts/setup-node.sh         # Set up Node.js (nvm, npm, bun)
 ./scripts/setup-uv.sh           # Install UV Python environment manager
 ./scripts/setup-go.sh           # Install Go
-./scripts/setup-kubectl.sh      # Install kubectl
-./scripts/install-temporal.sh    # Install Temporal CLI
-./scripts/install-claude-code.sh # Install Claude Code CLI and skills
-./scripts/install-opencode.sh    # Install OpenCode CLI and plugins
+./scripts/install-opencode.sh   # Install OpenCode CLI and plugins
+./scripts/setup-bun.sh          # Standalone Bun setup (not in main flow)
 ```
 
 **Developer utilities:**
 ```bash
-./scripts/lib/common.sh         # Shared utility functions (source this in scripts)
+./scripts/lib/common.sh         # Shared utility functions
 ./DEVELOPER_GUIDE.md            # Guide for adding new setup scripts
 ```
 
@@ -53,12 +51,9 @@ install.sh
   ├── setup-dotfiles.sh (copies configs to $HOME)
   ├── sync-folders.sh (syncs bin/ to ~/.dotfiles)
   ├── install-packages.sh (apt packages - uses lib/common.sh)
-  ├── setup-node.sh (nvm, npm global packages, bun)
+  ├── setup-node.sh (nvm, npm, bun)
   ├── setup-uv.sh (Python package manager - uses lib/common.sh)
   ├── setup-go.sh (Go runtime - uses lib/common.sh)
-  ├── setup-kubectl.sh (Kubernetes CLI)
-  ├── install-temporal.sh (Temporal CLI)
-  ├── install-claude-code.sh (Claude Code CLI and skills)
   └── install-opencode.sh (OpenCode CLI + LiteLLM plugin)
 ```
 
@@ -72,10 +67,10 @@ scripts/
   │       - cmd_available()        Check if command is available
   │       - install_if_missing()   Install package if not present
   │       - update_if_needed()     Run apt-get update if needed
-  │       - version_matches()      Compare version strings
+  │       - version_matches()     Compare version strings
   │       - install_binary_if_needed()  Install binary if version mismatch
-  │       - download_if_needed()   Download with caching
-  │       - extract_archive()      Extract tar.gz/zip archives
+  │       - download_if_needed()  Download with caching
+  │       - extract_archive()     Extract tar.gz/zip archives
   └── *.sh (setup scripts)
 ```
 
@@ -85,25 +80,12 @@ scripts/
 - `scripts/` - Setup/installation scripts (sourced from `install.sh`)
   - `scripts/lib/` - Shared utility library
 - `config/` - Configuration files organized by tool
-  - `config/shell/` - Shell configs (`.bashrc`, `.profile`)
   - `config/git/` - Git config (`.gitconfig`)
-  - `config/npm/` - npm config (`.npmrc`)
-  - `config/bun/` - Bun config (`.bunfig.toml`)
-  - `config/uv/` - UV config (`uv.toml`)
-  - `config/claude/` - Claude Code settings and skills
-    - `settings.json` - Claude Code managed settings
-    - `skills/` - Claude Code skills (copied to `~/.claude/skills/`)
-    - `commands/` - Slash commands (copied to `~/.claude/commands/`)
-      - `/code-review` - Comprehensive code review
-      - `/git-commit` - Create git commits
-      - `/refactor` - Refactor code
-      - `/security-check` - Security vulnerability scan
   - `config/opencode/` - OpenCode configuration
-    - `opencode.json` - OpenCode config (plugins)
+    - `opencode.json` - OpenCode plugins config
     - `litellm.json` - LiteLLM auth credentials template
+  - `config/shell/` - Shell configs
 - `shell/` - Shell source files (`.exports`, `.aliases`)
-- `packages/` - Plugin packages
-  - `opencode-litellm-auth/` - LiteLLM auth plugin for OpenCode
 
 ### Configuration Loading
 
@@ -139,32 +121,11 @@ All tools are downloaded from their official sources:
 - Node.js via nvm from `github.com/nvm-sh`
 - Bun from `bun.sh`
 
-## Claude Code
-
-- Claude Code CLI is installed via `install-claude-code.sh` (requires Node.js)
-- Binary installed to `~/.local/bin/claude`
-- Version is checked against the mirror and updated if needed
-- Settings: `config/claude/settings.json` → `~/.claude/settings.json`
-- Skills: `config/claude/skills/` → `~/.claude/skills/`
-- Slash Commands: `config/claude/commands/` → `~/.claude/commands/`
-  - `/code-review` - Review changes for quality, security, performance
-  - `/git-commit` - Create conventional git commits
-  - `/refactor` - Improve code clarity and maintainability
-  - `/security-check` - Scan for security vulnerabilities
-
-### OpenCode Integration
+## OpenCode Integration
 
 - OpenCode CLI is installed via `install-opencode.sh` (requires Bun)
-- Claude Code commands and skills are symlinked to OpenCode config:
-  - Commands: `~/.claude/commands/` → `~/.config/opencode/commands/`
-  - Skills: `~/.claude/skills/` → `~/.config/opencode/skills/`
-
-#### LiteLLM Plugin
-
-- Plugin: `packages/opencode-litellm-auth/` - TypeScript plugin that provides:
-  - Authentication to self-hosted LiteLLM instances
-  - Automatic model discovery from `/v1/models` endpoint
-  - Tools: `litellm-list-models`, `litellm-refresh-models`
+- Binary installed to `~/.local/bin/opencode`
+- LiteLLM plugin provides authentication to self-hosted LiteLLM instances
 - Configuration: Edit `~/.config/opencode/litellm.json` with:
   ```json
   {
@@ -179,7 +140,6 @@ All tools are downloaded from their official sources:
 - Scripts wait for apt/dpkg locks before proceeding
 - All setup scripts check for existing installations before making changes
 - VS Code settings are synced to `~/.local/share/code-server/User/settings.json`
-- Secrets like `GITLAB_PERSONAL_ACCESS_TOKEN` are loaded via Coder external-auth integration
 
 ## Development
 
