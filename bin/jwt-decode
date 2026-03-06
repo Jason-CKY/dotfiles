@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+# Dependency check
+if ! command -v jq &> /dev/null; then
+    echo "Error: 'jq' is required." >&2
+    exit 1
+fi
+
+# Determine input source (Argument 1 or Stdin)
+if [ -n "$1" ]; then
+    JWT="$1"
+else
+    JWT=$(cat)
+fi
+
+if [ -z "$JWT" ]; then
+    echo "Usage: jwt-decode <token>" >&2
+    echo "       echo <token> | jwt-decode" >&2
+    exit 1
+fi
+
+b64url_decode() {
+    local input=$(cat)
+    # FIX: We use '_-' to ensure the hyphen is not interpreted as a flag by tr
+    input=$(echo "$input" | tr '_-' '/+')
+    
+    local len=${#input}
+    local mod=$((len % 4))
+    
+    if [ $mod -eq 2 ]; then
+        input="${input}=="
+    elif [ $mod -eq 3 ]; then
+        input="${input}="
+    fi
+    
+    echo "$input" | openssl base64 -d -A 2>/dev/null
+}
+
+IFS='.' read -r header payload signature <<< "$JWT"
+
+# Decode Header and Payload to strings
+raw_header=$(echo "$header" | b64url_decode)
+raw_payload=$(echo "$payload" | b64url_decode)
+
+# Validate decoding
+if [ -z "$raw_header" ] || [ -z "$raw_payload" ]; then
+    echo "Error: Unable to decode JWT sections. Is the token valid?" >&2
+    exit 1
+fi
+
+# Construct final JSON object
+# --argjson allows us to nest the decoded header/payload as objects, not strings
+jq -n \
+    --argjson h "$raw_header" \
+    --argjson p "$raw_payload" \
+    --arg s "$signature" \
+    '{header: $h, payload: $p, signature: $s}'

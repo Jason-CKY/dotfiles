@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+# Dependency check
+if ! command -v jq &> /dev/null || ! command -v openssl &> /dev/null; then
+    echo "Error: 'jq' and 'openssl' are required." >&2
+    exit 1
+fi
+
+DEFAULT_SECRET="secret"
+SECRET="$DEFAULT_SECRET"
+IS_DEFAULT=1
+
+# Determine Input Source (Args vs Pipe)
+if [ ! -t 0 ]; then
+    # --- STDIN is valid (Piped data) ---
+    PAYLOAD=$(cat)
+    
+    # If an argument is provided with the pipe, it treats it as the secret
+    if [ -n "$1" ]; then
+        SECRET="$1"
+        IS_DEFAULT=0
+    fi
+else
+    # --- No Pipe (Interactive/Args) ---
+    if [ -n "$2" ]; then
+        # Two args: $1=Secret, $2=Payload
+        SECRET="$1"
+        PAYLOAD="$2"
+        IS_DEFAULT=0
+    elif [ -n "$1" ]; then
+        # One arg: $1=Payload, Secret=Default
+        PAYLOAD="$1"
+    else
+        echo "Usage: jwt-encode [secret] <json-payload>" >&2
+        echo "       echo <json-payload> | jwt-encode [secret]" >&2
+        exit 1
+    fi
+fi
+
+# Validation
+if [ -z "$PAYLOAD" ]; then
+    echo "Error: Payload is empty." >&2
+    exit 1
+fi
+
+if [ "$IS_DEFAULT" -eq 1 ]; then
+    echo "⚠️  Note: Using default secret 'secret'" >&2
+fi
+
+# 1. Header
+HEADER='{"alg":"HS256","typ":"JWT"}'
+
+# Helper: Base64URL Encode
+b64url_encode() {
+    # We split tr commands to avoid argument parsing issues with leading hyphens
+    openssl base64 -e -A | tr '+' '-' | tr '/' '_' | tr -d '='
+}
+
+# 2. Encode Header and Payload
+ENC_HEADER=$(echo -n "$HEADER" | jq -c . | b64url_encode)
+ENC_PAYLOAD=$(echo -n "$PAYLOAD" | jq -c . | b64url_encode)
+
+# 3. Create Signature
+DATA="${ENC_HEADER}.${ENC_PAYLOAD}"
+
+# Sign with HMAC SHA256
+# Note: We use xxd to handle the secret as hex for openssl
+SIGNATURE=$(echo -n "$DATA" | openssl dgst -sha256 -mac HMAC -macopt hexkey:"$(echo -n "$SECRET" | xxd -p -c 256)" -binary | b64url_encode)
+
+# 4. Output
+echo "${DATA}.${SIGNATURE}"
