@@ -8,11 +8,11 @@ You are performing a high-stakes code review. Do not just look at the syntax; lo
 
 ## Phase 1: Context Gathering
 First, analyze the state of the repository to understand the "Why" behind these changes:
-- **Status Check**: !`git status`
-- **Branch Context**: !`git branch --show-current`
-- **Recent Intent**: !`git log -n 5 --oneline` (To see the trajectory of recent work)
-- **The Changes**: !`git diff HEAD`
-- **Scope**: !`git diff --name-only HEAD`
+- **Status Check**: `git status`
+- **Branch Context**: `git branch --show-current`
+- **Recent Intent**: `git log -n 5 --oneline` (To see the trajectory of recent work)
+- **The Changes**: `git diff HEAD`
+- **Scope**: `git diff --name-only HEAD`
 
 ## Phase 2: Impact Analysis (Deep Dive)
 Before providing feedback, you must:
