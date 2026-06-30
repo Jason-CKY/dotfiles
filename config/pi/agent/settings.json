@@ -1,0 +1,14 @@
+{
+  "packages": [
+    "npm:pi-mcp-adapter",
+    "npm:pi-lsp-extension",
+    "npm:pi-rewind",
+    "npm:pi-subagents",
+    "npm:pi-btw",
+    "npm:pi-mermaid",
+    "npm:pi-claude-permissions",
+    "npm:pi-ask-user"
+  ],
+  "hideThinkingBlock": true,
+  "enableInstallTelemetry": false
+}

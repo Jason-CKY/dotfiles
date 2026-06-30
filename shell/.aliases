@@ -1,4 +1,5 @@
 alias gst="git status"
-alias k="kubectl"
 alias serve="uv run -- python -m http.server"
 alias oc="opencode"
+alias cc="claude"
+alias cm="claude --model 'claude-opus-4-8[1m]' --effort max"

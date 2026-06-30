@@ -1,51 +1,43 @@
 #!/usr/bin/env bash
-# Node.js Environment Setup (nvm, npm, bun)
+# Node.js Environment Setup (npm, n, bun)
 
 set -euo pipefail
 
 SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
-# Install nvm if not present
-NVM_DIR="$HOME/.nvm"
-if [ ! -d "$NVM_DIR" ]; then
-    echo "Installing nvm..."
-    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-else
-    echo "nvm is already installed."
-fi
-
-# Source nvm
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-# Configure global npm without sudo
+# Configure global npm without sudo (Idempotent: checks if directory exists and has correct owner)
 NPM_GLOBAL_DIR="$HOME/.node_modules"
 if [ ! -d "$NPM_GLOBAL_DIR" ]; then
     echo "Configuring global npm directory..."
     sudo mkdir -p "$NPM_GLOBAL_DIR"
     sudo chown -R "$USER" "$NPM_GLOBAL_DIR"
 else
+    # Ensure ownership is correct, idempotent way to fix a potential issue
     if [ "$(stat -c "%U" "$NPM_GLOBAL_DIR")" != "$USER" ]; then
         echo "Fixing ownership of global npm directory..."
         sudo chown -R "$USER" "$NPM_GLOBAL_DIR"
     fi
 fi
 
-# Install and set default node 24
-NODE_VERSION="24"
-echo "Installing Node.js $NODE_VERSION..."
-nvm install "$NODE_VERSION"
-nvm alias default "$NODE_VERSION"
-nvm use default
-
-# Add nvm to .bashrc if not present
-BASHRC="$HOME/.bashrc"
-NVM_SOURCE_LINE='[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"'
-if ! grep -qF 'NVM_DIR="$HOME/.nvm"' "$BASHRC" 2>/dev/null; then
-    echo "" >> "$BASHRC"
-    echo '# NVM' >> "$BASHRC"
-    echo 'export NVM_DIR="$HOME/.nvm"' >> "$BASHRC"
-    echo "$NVM_SOURCE_LINE" >> "$BASHRC"
+# Install n for Node.js management (Idempotent: checks if n is installed globally)
+if ! command -v n &> /dev/null; then
+    echo "Installing n..."
+    NODE_OPTIONS="" npm install -g n
+else
+    echo "n is already installed."
 fi
 
-echo "Node.js $(node --version) installed successfully."
+# Configure n directory. `n` reads N_PREFIX to decide where to install Node, so
+# export it here too (install.sh sources shell/.exports, but this script must
+# also work when run standalone, where that export is absent).
+export N_PREFIX="$HOME/.n"
+
+if [ ! -d "$N_PREFIX" ]; then
+    echo "Creating n directory..."
+    mkdir -p "$N_PREFIX"
+fi
+
+"$NPM_GLOBAL_DIR/bin/n" install 24
+
+echo "Running npm package installation script..."
+"$SCRIPT_DIR/install-npm-packages.sh" "$N_PREFIX/bin/npm"

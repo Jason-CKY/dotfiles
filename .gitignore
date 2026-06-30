@@ -1,1 +1,6 @@
+.pi/superpowers-state.json
+
 ignore/
+
+# Claude Code machine-local settings (not committed)
+.claude/settings.local.json

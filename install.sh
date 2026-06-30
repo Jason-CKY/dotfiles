@@ -6,6 +6,7 @@ set -euo pipefail
 SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
 source "$SCRIPT_DIR/shell/.exports"
+source "$SCRIPT_DIR/scripts/lib/common.sh"
 
 # --- Helper Functions for Locks ---
 
@@ -21,18 +22,13 @@ wait_for_dpkg_lock() {
     done
 }
 
-# Function to check if apt is locked (This check is less reliable and often redundant if dpkg locks are checked, but kept for completeness)
-wait_for_apt_lock() {
-    while ps aux | grep -v grep | grep -E 'apt|apt-get|aptitude' >/dev/null; do
-        echo "Another apt process is running... waiting..."
-        sleep 2
-    done
-}
-
-# Wait for both locks
+# Wait for package manager locks to be released
 wait_for_dpkg_lock
-wait_for_apt_lock
 echo "Package manager locks are free. Proceeding..."
+
+# Heal any dpkg state left half-configured by an interrupted apt run before the
+# package scripts run (no-op when dpkg is already clean).
+dpkg_ensure_configured
 
 # --- Execute Installation Scripts ---
 
@@ -44,11 +40,20 @@ $SCRIPT_DIR/scripts/setup-dotfiles.sh
 echo "Running sync folders script..."
 $SCRIPT_DIR/scripts/sync-folders.sh
 
+echo "Running Pi sync script..."
+$SCRIPT_DIR/scripts/sync-pi.sh
+
 echo "Running package installation script..."
 $SCRIPT_DIR/scripts/install-packages.sh
 
 echo "Running Node.js environment setup script..."
 $SCRIPT_DIR/scripts/setup-node.sh
+
+echo "Running Pi Coding Agent installation script..."
+$SCRIPT_DIR/scripts/install-pi.sh
+
+echo "Running Claude Code installation script..."
+$SCRIPT_DIR/scripts/install-claude-code.sh
 
 echo "Running UV (Python Environment) setup script..."
 $SCRIPT_DIR/scripts/setup-uv.sh
@@ -56,8 +61,17 @@ $SCRIPT_DIR/scripts/setup-uv.sh
 echo "Running Golang setup script..."
 $SCRIPT_DIR/scripts/setup-go.sh
 
+echo "Running Temporal CLI installation script..."
+$SCRIPT_DIR/scripts/install-temporal.sh
+
+echo "Running Vault CLI installation script..."
+$SCRIPT_DIR/scripts/install-vault.sh
+
 echo "Running opencode-ai installation script..."
 $SCRIPT_DIR/scripts/install-opencode.sh
+
+echo "Running Codex CLI installation script..."
+$SCRIPT_DIR/scripts/install-codex.sh
 
 echo "Script finished. All components are configured."
 

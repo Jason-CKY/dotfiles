@@ -1,11 +1,23 @@
 #!/usr/bin/env bash
 # Common utility functions for dotfiles setup scripts
 
-# Determine if we need sudo
-SUDO=""
-if [ "$(id -u)" -ne 0 ]; then
-    SUDO="sudo"
-fi
+# Run apt-get, waiting for the dpkg/apt lock instead of failing if another
+# process (e.g. unattended-upgrades) holds it. DPkg::Lock::Timeout makes apt
+# block up to N seconds for the lock; 300s comfortably outlasts a typical
+# unattended-upgrades run. Override with APT_LOCK_TIMEOUT.
+# Usage: apt_get <apt-get args...>
+apt_get() {
+    sudo apt-get -o DPkg::Lock::Timeout="${APT_LOCK_TIMEOUT:-300}" "$@"
+}
+
+# Heal a dpkg database left half-configured by an interrupted apt run (e.g. an
+# unattended-upgrades process killed on workspace restart). Without this, the
+# next apt-get aborts with "dpkg was interrupted, you must manually run
+# 'sudo dpkg --configure -a'". This is a fast no-op when dpkg is already clean.
+# Usage: dpkg_ensure_configured
+dpkg_ensure_configured() {
+    sudo dpkg --configure -a --pending
+}
 
 # Check if a package is installed (Debian/Ubuntu)
 # Usage: pkg_installed <package-name>
@@ -32,7 +44,7 @@ install_if_missing() {
     local pkg="$1"
     if ! pkg_installed "$pkg"; then
         echo "Installing $pkg..."
-        $SUDO apt-get install -y "$pkg"
+        apt_get install -y "$pkg"
     else
         echo "$pkg is already installed."
     fi
@@ -51,7 +63,15 @@ update_if_needed() {
 
     if [ "$need_update" = true ]; then
         echo "Updating package lists..."
-        $SUDO apt-get update
+        # A single broken third-party repo (e.g. a decommissioned PPA whose
+        # InRelease no longer verifies) must not abort the whole provisioning
+        # run. apt-get update still refreshes every working repo, so warn and
+        # continue; the package installs below come from the repos that did
+        # update and will fail with a clear error if genuinely unavailable.
+        if ! apt_get update; then
+            echo "Warning: 'apt-get update' reported errors (likely a broken" \
+                 "third-party apt repo); continuing with cached package lists." >&2
+        fi
     fi
 }
 
@@ -63,7 +83,7 @@ install_cmd_if_missing() {
 
     if ! cmd_available "$cmd"; then
         echo "Installing $pkg (provides $cmd)..."
-        $SUDO apt-get install -y "$pkg"
+        apt_get install -y "$pkg"
     else
         echo "$cmd is already available."
     fi

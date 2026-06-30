@@ -127,3 +127,6 @@ fi
 
 # UV Shell Completion
 eval "$(uv generate-shell-completion bash)"
+
+unset ANTHROPIC_AUTH_TOKEN
+unset ANTHROPIC_BASE_URL
