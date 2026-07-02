@@ -94,7 +94,9 @@ scripts/
   - `config/uv/` - UV config (`uv.toml`)
   - `config/claude/` - Claude Code settings, skills, commands, and plugins
     - `settings.json` - Claude Code managed settings
-    - `skills/` - Claude Code skills (copied to `~/.claude/skills/`)
+    - `skills/` - **Canonical skills set for all agents.** Synced as an exact
+      mirror to `~/.claude/skills/` (wiped first, so skills removed from the repo
+      are removed on install). OpenCode, Pi, and Codex symlink to this dir.
     - `commands/` - Slash commands (copied to `~/.claude/commands/`)
       - `/code-review` - Comprehensive code review
       - `/git-commit` - Create git commits
@@ -135,7 +137,8 @@ All local bins are consolidated in PATH via `shell/.exports`:
 - Pi is installed via npm: `npm install -g @mariozechner/pi-coding-agent`
 - Pi is configured in `config/pi/agent/` and synced to `~/.pi`
 - Settings: `config/pi/agent/settings.json` → `~/.pi/agent/settings.json`
-- Skills: `config/pi/agent/skills/` → `~/.pi/agent/skills/`
+- Skills: `~/.pi/agent/skills/` is a **symlink** to `~/.claude/skills/` (the
+  canonical set), created by `sync-pi.sh`. Pi has no separate skills in the repo.
 
 ### Pi MCP Adapter
 
@@ -149,7 +152,12 @@ All local bins are consolidated in PATH via `shell/.exports`:
 - Installed using the official installer: `curl -fsSL https://claude.ai/install.sh | bash`
   (binary lands at `~/.local/bin/claude`); run `claude update` to upgrade.
 - Settings: `config/claude/settings.json` → `~/.claude/settings.json`
-- Skills: `config/claude/skills/` → `~/.claude/skills/`
+- Skills: `config/claude/skills/` → `~/.claude/skills/` — the **canonical skills
+  set**. `setup-dotfiles.sh` (and `install-claude-code.sh`) wipe
+  `~/.claude/skills` before copying, so it is an exact mirror of the repo; skills
+  present on the machine but not in the repo are removed. OpenCode
+  (`~/.config/opencode/skills`), Pi (`~/.pi/agent/skills`), and Codex
+  (`~/.agents/skills`) are all symlinks to this dir.
 - Commands: `config/claude/commands/` → `~/.claude/commands/`
 - Plugins: `config/claude/plugins/` → `~/.claude/plugins/` (includes marketplaces)
 - The official plugins marketplace is cloned to
@@ -159,9 +167,11 @@ All local bins are consolidated in PATH via `shell/.exports`:
 ### OpenCode Integration
 
 - OpenCode CLI is installed via `install-opencode.sh` (requires Bun)
-- Claude Code commands and skills are symlinked to OpenCode config:
-  - Commands: `~/.claude/commands/` → `~/.config/opencode/commands/`
-  - Skills: `~/.claude/skills/` → `~/.config/opencode/skills/`
+- Config is copied from `config/opencode/` to `~/.config/opencode/` by
+  `setup-dotfiles.sh` (commands come from `config/opencode/commands/`).
+- Skills: `~/.config/opencode/skills/` is a **symlink** to `~/.claude/skills/`
+  (the canonical set), so OpenCode uses the same skills as Claude. OpenCode has
+  no separate skills in the repo.
 
 ## Codex
 

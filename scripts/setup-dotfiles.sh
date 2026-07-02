@@ -21,14 +21,21 @@ cp $CONFIG_DIR/bun/.bunfig.toml $HOME/.bunfig.toml
 mkdir -p $HOME/.config/uv
 cp $CONFIG_DIR/uv/uv.toml $HOME/.config/uv/uv.toml
 
-# Claude configuration
-mkdir -p $HOME/.claude
-cp -r $CONFIG_DIR/claude/* $HOME/.claude/
+# Claude configuration. The Claude skills dir is the single canonical skills set
+# shared by every agent (OpenCode, Pi, Codex) via symlinks. Wipe it before
+# copying so any skill no longer present in this repo is removed (exact mirror),
+# rather than left behind from a previous install.
+mkdir -p "$HOME/.claude"
+rm -rf "$HOME/.claude/skills"
+cp -r "$CONFIG_DIR"/claude/* "$HOME/.claude/"
 
-# OpenCode configuration
-mkdir -p $HOME/.config/opencode
-cp -r $CONFIG_DIR/opencode/* $HOME/.config/opencode/
+# OpenCode configuration; its skills are a symlink to the canonical Claude skills.
+mkdir -p "$HOME/.config/opencode"
+cp -r "$CONFIG_DIR"/opencode/* "$HOME/.config/opencode/"
+rm -rf "$HOME/.config/opencode/skills"
+ln -sfn "$HOME/.claude/skills" "$HOME/.config/opencode/skills"
 
-# Share Claude skills with Codex (~/.agents/skills -> ~/.claude/skills)
+# Codex reads user-level skills from ~/.agents/skills; point it at the same set.
 mkdir -p "$HOME/.agents"
+rm -rf "$HOME/.agents/skills"
 ln -sfn "$HOME/.claude/skills" "$HOME/.agents/skills"

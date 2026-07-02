@@ -24,9 +24,9 @@ script in order. After it finishes, restart your terminal or run
 
 | Step | Script | What it does |
 |------|--------|--------------|
-| 1 | `setup-dotfiles.sh` | Link/copy configs (`.zshrc`, `.npmrc`, `.bunfig.toml`, `uv.toml`) into `$HOME`; symlink Claude skills into `~/.agents/skills` for Codex |
+| 1 | `setup-dotfiles.sh` | Link/copy configs (`.zshrc`, `.npmrc`, `.bunfig.toml`, `uv.toml`) into `$HOME`; sync `~/.claude/skills` as an exact mirror and symlink OpenCode/Codex skills to it |
 | 2 | `sync-folders.sh` | Sync `bin/` and `shell/` to `~/.dotfiles` |
-| 3 | `sync-pi.sh` | Sync Pi Coding Agent config (`config/pi/agent/`) to `~/.pi` |
+| 3 | `sync-pi.sh` | Sync Pi Coding Agent config (`config/pi/agent/`) to `~/.pi`; symlink `~/.pi/agent/skills` to `~/.claude/skills` |
 | 4 | `install-packages.sh` | Install apt system packages (incl. `zsh`) |
 | 5 | `setup-node.sh` | Set up Node.js (`n`, npm global packages, Bun) |
 | 6 | `install-pi.sh` | Install Pi Coding Agent via npm |
@@ -35,7 +35,7 @@ script in order. After it finishes, restart your terminal or run
 | 9 | `setup-go.sh` | Install Go |
 | 10 | `install-temporal.sh` | Install the Temporal CLI |
 | 11 | `install-vault.sh` | Install the HashiCorp Vault CLI (official apt repo) |
-| 12 | `install-opencode.sh` | Install the OpenCode CLI (via Bun) and link Claude commands/skills |
+| 12 | `install-opencode.sh` | Install the OpenCode CLI (via Bun); its skills symlink to `~/.claude/skills` |
 | 13 | `install-codex.sh` | Install the Codex CLI (shares Claude skills via `~/.agents/skills`) |
 
 ## Repository Layout
@@ -50,9 +50,9 @@ script in order. After it finishes, restart your terminal or run
 ├── config/                 # Configuration files, organized by tool
 │   ├── shell/              #   .zshrc
 │   ├── git/  npm/  bun/  uv/
-│   ├── claude/            #   Claude Code settings, skills, commands, plugins
-│   ├── opencode/         #   OpenCode commands, skills, plugins
-│   └── pi/               #   Pi Coding Agent config
+│   ├── claude/            #   Claude Code settings, canonical skills, commands, plugins
+│   ├── opencode/         #   OpenCode commands, plugins (skills symlink to Claude's)
+│   └── pi/               #   Pi Coding Agent config (skills symlink to Claude's)
 ├── shell/                  # Sourced shell files
 │   ├── .aliases           #   e.g. gst→git status, serve→http.server
 │   └── .exports           #   PATH and environment variables
