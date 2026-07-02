@@ -1,5 +1,5 @@
 # Set a consolidated PATH, referencing all configured local bins
-export PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/.local/go/bin:$HOME/.go/bin:$HOME/.node_modules/bin:$HOME/.n/bin:$HOME/.bun/bin:$PATH
+export PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/.opencode/bin:$HOME/.local/go/bin:$HOME/.go/bin:$HOME/.node_modules/bin:$HOME/.n/bin:$HOME/.bun/bin:$PATH
 export GOPATH=$HOME/.go
 export N_PREFIX="$HOME/.n"
 export BUN_INSTALL="$HOME/.bun"

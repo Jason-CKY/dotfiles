@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Pi Coding Agent Installation
-# Uses npm to install the latest version of @earendil-works/pi-coding-agent
+# Installs/updates @earendil-works/pi-coding-agent to the latest version via npm.
+# The official docs recommend the --ignore-scripts flag for npm installs.
+# Docs: https://pi.dev/  and https://www.npmjs.com/package/@earendil-works/pi-coding-agent
 
 set -euo pipefail
 
@@ -16,23 +18,12 @@ fi
 
 echo "Using npm: $(npm --version)"
 
-# Check if pi binary exists
-needs_install=false
-if [ ! -x "$BINARY_PATH" ]; then
-    echo "$BINARY_NAME is not installed."
-    needs_install=true
-else
-    # Get installed version
-    installed_version=$("$BINARY_PATH" --version 2>/dev/null | awk '{print $NF}' | sed 's/^v//')
-    echo "Installed version: $installed_version at $BINARY_PATH"
-    echo "$BINARY_NAME is already installed."
-fi
+# Always install the latest release.
+echo "Installing/updating $PACKAGE_NAME@latest..."
+npm install -g --ignore-scripts "$PACKAGE_NAME@latest"
 
-# Perform installation only if not installed
-if [ "$needs_install" = true ]; then
-    echo "Installing $PACKAGE_NAME@latest..."
-    npm install -g "$PACKAGE_NAME@latest"
-    echo "Installation complete."
+if [ -x "$BINARY_PATH" ]; then
+    echo "$BINARY_NAME installed: $("$BINARY_PATH" --version 2>/dev/null) at $BINARY_PATH"
 fi
 
 echo "Pi Coding Agent setup complete."

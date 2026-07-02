@@ -58,7 +58,7 @@ install.sh
   ├── install-temporal.sh (Temporal CLI)
   ├── install-vault.sh (HashiCorp Vault CLI via apt repo)
   ├── install-claude-code.sh (Claude Code CLI and skills)
-  ├── install-opencode.sh (OpenCode CLI via Bun)
+  ├── install-opencode.sh (OpenCode CLI via official installer)
   └── install-codex.sh (Codex CLI)
 ```
 
@@ -123,6 +123,7 @@ scripts/
 All local bins are consolidated in PATH via `shell/.exports`:
 - `~/.local/bin`
 - `~/.dotfiles/bin`
+- `~/.opencode/bin` (OpenCode's official-installer location)
 - `~/.local/go/bin`, `~/.go/bin`
 - `~/.node_modules/bin`, `~/.n/bin`, `~/.bun/bin`
 
@@ -134,7 +135,9 @@ All local bins are consolidated in PATH via `shell/.exports`:
 
 ## Pi Coding Agent
 
-- Pi is installed via npm: `npm install -g @mariozechner/pi-coding-agent`
+- Pi is installed/updated to the **latest** on every run via npm (with the
+  docs-recommended `--ignore-scripts` flag):
+  `npm install -g --ignore-scripts @earendil-works/pi-coding-agent@latest`
 - Pi is configured in `config/pi/agent/` and synced to `~/.pi`
 - Settings: `config/pi/agent/settings.json` → `~/.pi/agent/settings.json`
 - Skills: `~/.pi/agent/skills/` is a **symlink** to `~/.claude/skills/` (the
@@ -148,9 +151,11 @@ All local bins are consolidated in PATH via `shell/.exports`:
 
 ## Claude Code
 
-- Claude Code CLI is installed via `install-claude-code.sh` (requires Node.js)
-- Installed using the official installer: `curl -fsSL https://claude.ai/install.sh | bash`
-  (binary lands at `~/.local/bin/claude`); run `claude update` to upgrade.
+- Claude Code CLI is installed via `install-claude-code.sh`.
+- Installed/updated to the **latest** on every run: if `~/.local/bin/claude`
+  already exists the script runs `claude update`; otherwise it installs via the
+  official installer `curl -fsSL https://claude.ai/install.sh | bash` (binary
+  lands at `~/.local/bin/claude`).
 - Settings: `config/claude/settings.json` → `~/.claude/settings.json`
 - Skills: `config/claude/skills/` → `~/.claude/skills/` — the **canonical skills
   set**. `setup-dotfiles.sh` (and `install-claude-code.sh`) wipe
@@ -166,7 +171,12 @@ All local bins are consolidated in PATH via `shell/.exports`:
 
 ### OpenCode Integration
 
-- OpenCode CLI is installed via `install-opencode.sh` (requires Bun)
+- OpenCode CLI is installed/updated to the **latest** on every run via
+  `install-opencode.sh`, using OpenCode's official installer
+  (`curl -fsSL https://opencode.ai/install | bash -s -- --no-modify-path`). The
+  binary lands at `~/.opencode/bin/opencode` (added to PATH in `shell/.exports`).
+  The installer downloads a standalone binary — it needs only `curl`/`tar`, not
+  Node or Bun.
 - Config is copied from `config/opencode/` to `~/.config/opencode/` by
   `setup-dotfiles.sh` (commands come from `config/opencode/commands/`).
 - Skills: `~/.config/opencode/skills/` is a **symlink** to `~/.claude/skills/`
