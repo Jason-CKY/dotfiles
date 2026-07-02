@@ -15,6 +15,7 @@ $username\
 $directory\
 [](fg:color_yellow bg:color_aqua)\
 $git_branch\
+$custom\
 $git_status\
 [](fg:color_aqua bg:color_blue)\
 $golang\
@@ -70,23 +71,33 @@ symbol = ""
 style = "bg:color_aqua"
 format = '[[ $symbol $branch ](fg:color_fg0 bg:color_aqua)]($style)'
 
-# Readable git status: counts per state instead of bare symbols.
-#   +N staged   !N modified   ?N untracked   ✘N deleted   »N renamed
-#   ⇡N ahead    ⇣N behind      $ stashed      = conflicts
+# Minimal git status: a single dot (custom.git_dirty, above) means the working
+# tree has *any* uncommitted change; this module only adds ahead/behind arrows
+# relative to the remote. All the per-file states are intentionally silenced.
 [git_status]
 style = "bg:color_aqua"
-format = '[[($all_status$ahead_behind )](fg:color_fg0 bg:color_aqua)]($style)'
-conflicted = "=${count} "
-ahead = "⇡${count} "
-behind = "⇣${count} "
-diverged = "⇡${ahead_count}⇣${behind_count} "
+format = '[[($ahead_behind)](fg:color_fg0 bg:color_aqua)]($style)'
+ahead = " ⇡${count}"
+behind = " ⇣${count}"
+diverged = " ⇡${ahead_count}⇣${behind_count}"
 up_to_date = ""
-untracked = "?${count} "
-stashed = "\\$${count} "
-modified = "!${count} "
-staged = "+${count} "
-renamed = "»${count} "
-deleted = "✘${count} "
+conflicted = ""
+untracked = ""
+stashed = ""
+modified = ""
+staged = ""
+renamed = ""
+deleted = ""
+
+# One yellow ● when the working tree is dirty (staged/modified/untracked/…),
+# nothing when clean. `when` only succeeds inside a git repo with changes, so
+# the module hides itself otherwise.
+[custom.git_dirty]
+description = "Yellow dot when the working tree has uncommitted changes"
+when = 'test -n "$(git status --porcelain 2>/dev/null)"'
+command = "echo ●"
+style = "fg:color_yellow bg:color_aqua"
+format = "[$output ]($style)"
 
 [golang]
 symbol = ""
