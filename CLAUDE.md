@@ -27,6 +27,7 @@ This is a dotfiles repository that automates setting up a complete development e
 ./scripts/install-vault.sh      # Install HashiCorp Vault CLI (apt repo)
 ./scripts/install-claude-code.sh # Install Claude Code CLI and skills
 ./scripts/install-codex.sh      # Install Codex CLI
+./scripts/install-starship.sh   # Install Starship cross-shell prompt
 ```
 
 **Developer utilities:**
@@ -59,7 +60,8 @@ install.sh
   ├── install-vault.sh (HashiCorp Vault CLI via apt repo)
   ├── install-claude-code.sh (Claude Code CLI and skills)
   ├── install-opencode.sh (OpenCode CLI via official installer)
-  └── install-codex.sh (Codex CLI)
+  ├── install-codex.sh (Codex CLI)
+  └── install-starship.sh (Starship cross-shell prompt)
 ```
 
 ### Library Structure
@@ -89,6 +91,7 @@ scripts/
   - `scripts/lib/` - Shared utility library
 - `config/` - Configuration files organized by tool
   - `config/shell/` - Shell config (`.zshrc`)
+  - `config/starship/` - Starship prompt config (`starship.toml`)
   - `config/npm/` - npm config (`.npmrc`)
   - `config/bun/` - Bun config (`.bunfig.toml`)
   - `config/uv/` - UV config (`uv.toml`)
@@ -194,6 +197,28 @@ All local bins are consolidated in PATH via `shell/.exports`:
   documented **user-level** skills location (per
   https://developers.openai.com/codex/skills), and Codex follows the symlink
   target when scanning for skills — so every Claude skill is available to Codex.
+
+## Starship Prompt
+
+- Starship is the shell prompt, shared across **both bash and zsh**. Installed
+  via `install-starship.sh` using the official installer
+  (`curl -sS https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin`).
+  Idempotent: skips if `starship` is already on PATH.
+- Config: `config/starship/starship.toml` → `~/.config/starship.toml` (copied by
+  `setup-dotfiles.sh`). Based on the official **Gruvbox Rainbow** preset, trimmed
+  to the tools in use.
+- Shell init:
+  - zsh: the managed `.zshrc` runs `eval "$(starship init zsh)"` when starship is
+    on PATH (falls back to the old built-in `PROMPT` otherwise).
+  - bash: `setup-dotfiles.sh` appends an `eval "$(starship init bash)"` block to
+    `~/.bashrc` idempotently (guarded by a `grep`, so it never clobbers the
+    user's bashrc or duplicates on re-runs).
+- Prompt segments: OS + username, current path, git branch + status (shown as
+  readable per-state counts, e.g. `!2 ?1 +3`), Go / Bun / Python(+uv venv)
+  versions when in a relevant project, the current kubectl (Kubernetes) context,
+  and the time.
+- **Requires a Nerd Font** in the terminal for the powerline arrows and tool
+  icons to render (otherwise they show as boxes).
 
 ## Vault CLI
 

@@ -21,8 +21,14 @@ setopt INTERACTIVE_COMMENTS  # allow `#` comments in interactive shells
 autoload -Uz compinit && compinit
 
 # --- Prompt ---
-autoload -Uz colors && colors
-PROMPT='%F{green}%n@%m%f:%F{blue}%~%f %# '
+# Use Starship (cross-shell prompt) when available; otherwise fall back to a
+# simple built-in prompt.
+if command -v starship >/dev/null 2>&1; then
+    eval "$(starship init zsh)"
+else
+    autoload -Uz colors && colors
+    PROMPT='%F{green}%n@%m%f:%F{blue}%~%f %# '
+fi
 
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
