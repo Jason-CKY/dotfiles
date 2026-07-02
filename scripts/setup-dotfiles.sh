@@ -7,16 +7,28 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 CONFIG_DIR="$SCRIPT_DIR/../config"
 echo "Creating configuration files for dotfiles..."
 
-# Shell configurations
-cp $CONFIG_DIR/shell/.bashrc $HOME/.bashrc
-cp $CONFIG_DIR/shell/.profile $HOME/.profile
+# Shell configurations (zsh)
+cp $CONFIG_DIR/shell/.zshrc $HOME/.zshrc
 cp $SCRIPT_DIR/../shell/.aliases $HOME/.aliases
 
-# Git configuration
-cp $CONFIG_DIR/git/.gitconfig $HOME/.gitconfig
+# npm configuration
+cp $CONFIG_DIR/npm/.npmrc $HOME/.npmrc
 
-# OpenCode configuration - remove existing and copy fresh to ensure updates are applied
-rm -rf "$HOME/.config/opencode"
-mkdir -p "$HOME/.config/opencode"
+# Bun configuration
+cp $CONFIG_DIR/bun/.bunfig.toml $HOME/.bunfig.toml
+
+# UV configuration
+mkdir -p $HOME/.config/uv
+cp $CONFIG_DIR/uv/uv.toml $HOME/.config/uv/uv.toml
+
+# Claude configuration
+mkdir -p $HOME/.claude
+cp -r $CONFIG_DIR/claude/* $HOME/.claude/
+
+# OpenCode configuration
+mkdir -p $HOME/.config/opencode
 cp -r $CONFIG_DIR/opencode/* $HOME/.config/opencode/
 
+# Share Claude skills with Codex (~/.agents/skills -> ~/.claude/skills)
+mkdir -p "$HOME/.agents"
+ln -sfn "$HOME/.claude/skills" "$HOME/.agents/skills"

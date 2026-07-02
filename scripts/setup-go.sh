@@ -6,7 +6,7 @@ set -euo pipefail
 SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 source "$SCRIPT_DIR/lib/common.sh"
 
-GO_VERSION=$(curl -sL https://go.dev/VERSION?m=text | head -n1 | sed 's/^go//')
+GO_VERSION="1.26.3"
 GO_INSTALL_DIR="$HOME/.local/go"
 GO_BIN="$GO_INSTALL_DIR/bin/go"
 EXPECTED_VERSION_STR="go${GO_VERSION}"
@@ -50,8 +50,13 @@ if [ "$NEEDS_INSTALL" = true ]; then
     fi
 
     echo "Extracting..."
-    tar -C "$HOME/.local" -xzf "$GO_TAR_GZ"
-    rm "$GO_TAR_GZ"
+    sudo tar -C "$HOME/.local" -xzf "$GO_TAR_GZ"
+    sudo rm "$GO_TAR_GZ"
 
     echo "Installation complete."
 fi
+
+export PATH="$GO_INSTALL_DIR/bin:$PATH"
+
+# install go language server protocol for golang
+go install golang.org/x/tools/gopls@latest

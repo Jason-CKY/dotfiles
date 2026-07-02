@@ -1,13 +1,11 @@
 # Set a consolidated PATH, referencing all configured local bins
-add_to_path() {
-    if [ -d "$1" ] && [[ ":$PATH:" != *":$1:"* ]]; then
-        export PATH="$1:$PATH"
-    fi
-}
-
-add_to_path "$HOME/.local/bin"
-add_to_path "$HOME/.local/go/bin"
-add_to_path "$HOME/.dotfiles/bin"
-
+export PATH=$HOME/.local/bin:$HOME/.dotfiles/bin:$HOME/.local/go/bin:$HOME/.go/bin:$HOME/.node_modules/bin:$HOME/.n/bin:$HOME/.bun/bin:$PATH
+export GOPATH=$HOME/.go
+export N_PREFIX="$HOME/.n"
 export BUN_INSTALL="$HOME/.bun"
-export NVM_DIR="$HOME/.nvm"
+
+export DISABLE_COST_WARNING=1
+export DISABLE_ERROR_REPORTING=1
+export DISABLE_TELEMETRY=1
+export ENABLE_LSP_TOOL=1
+export NODE_OPTIONS="--use-system-ca"
