@@ -105,7 +105,9 @@ scripts/
       - `/git-commit` - Create git commits
       - `/refactor` - Refactor code
       - `/security-check` - Security vulnerability scan
-    - `plugins/` - Claude Code plugins and marketplaces (copied to `~/.claude/plugins/`)
+    - (Plugins/marketplaces are **not** stored here — they are runtime state
+      managed by the `claude plugin` CLI in `install-claude-code.sh`, since
+      `~/.claude/plugins/*.json` contains machine-specific absolute paths.)
 - `shell/` - Shell source files (`.exports`, `.aliases`)
 
 ### Configuration Loading
@@ -167,10 +169,24 @@ All local bins are consolidated in PATH via `shell/.exports`:
   (`~/.config/opencode/skills`), Pi (`~/.pi/agent/skills`), and Codex
   (`~/.agents/skills`) are all symlinks to this dir.
 - Commands: `config/claude/commands/` → `~/.claude/commands/`
-- Plugins: `config/claude/plugins/` → `~/.claude/plugins/` (includes marketplaces)
-- The official plugins marketplace is cloned to
-  `~/.claude/plugins/claude-plugins-official` (from
-  `https://github.com/anthropics/claude-plugins-official.git`).
+- Plugins & marketplaces: managed via the `claude plugin` CLI in
+  `install-claude-code.sh` (`setup_plugins`), not by copying files. The script
+  registers each marketplace in `CLAUDE_MARKETPLACES` (`claude plugin
+  marketplace add`) and installs each plugin in `CLAUDE_PLUGINS` (`claude plugin
+  install ... --scope user`). Both are idempotent no-ops when already present.
+  This populates `~/.claude/plugins/{known_marketplaces,installed_plugins}.json`
+  with correct machine-specific paths — which is why that runtime state is
+  **not** checked into the repo. Currently registered:
+  `anthropics/claude-plugins-official`. Currently installed: `typescript-lsp`,
+  `pyright-lsp`, `gopls-lsp`.
+- `config/claude/settings.json` carries the **declarative** plugin config:
+  `enabledPlugins` (which installed plugins are active) and
+  `extraKnownMarketplaces` (marketplace sources, by GitHub repo — no
+  machine-specific paths, safe to commit). `install-claude-code.sh` runs
+  `sync_local_config` (copies settings.json) **before** `setup_plugins`, so the
+  declarative settings are in place before the CLI installs. Keep
+  `enabledPlugins`/`extraKnownMarketplaces` in sync with the
+  `CLAUDE_PLUGINS`/`CLAUDE_MARKETPLACES` lists in `install-claude-code.sh`.
 
 ### OpenCode Integration
 

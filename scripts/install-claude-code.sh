@@ -6,10 +6,21 @@ set -euo pipefail
 SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 
 CLAUDE_BIN="$HOME/.local/bin/claude"
-CLAUDE_PLUGINS_DIR="$HOME/.claude/plugins"
 
-# Official public Claude Code plugins marketplace
-OFFICIAL_REPO="https://github.com/anthropics/claude-plugins-official.git"
+# Marketplaces registered with Claude Code, managed via the `claude plugin`
+# CLI so Claude tracks them in ~/.claude/plugins/known_marketplaces.json.
+CLAUDE_MARKETPLACES=(
+    "anthropics/claude-plugins-official"
+)
+
+# Plugins to install (plugin@marketplace). Recorded by Claude in
+# ~/.claude/plugins/installed_plugins.json; enabled via the "enabledPlugins"
+# block of config/claude/settings.json. Keep the two lists in sync.
+CLAUDE_PLUGINS=(
+    "typescript-lsp@claude-plugins-official"
+    "pyright-lsp@claude-plugins-official"
+    "gopls-lsp@claude-plugins-official"
+)
 
 # Check if Node.js is installed (prerequisite)
 if ! command -v node &> /dev/null; then
@@ -29,21 +40,32 @@ fi
 
 echo "Claude Code installation complete."
 
-# Clone the official plugins marketplace (best-effort; failure is non-fatal)
-if command -v git &> /dev/null; then
-    if [ -d "$CLAUDE_PLUGINS_DIR/claude-plugins-official" ]; then
-        echo "Official marketplace exists. Pulling latest..."
-        git -C "$CLAUDE_PLUGINS_DIR/claude-plugins-official" pull \
-            || echo "Warning: failed to update official marketplace."
-    else
-        echo "Cloning official marketplace..."
-        mkdir -p "$CLAUDE_PLUGINS_DIR"
-        git clone "$OFFICIAL_REPO" "$CLAUDE_PLUGINS_DIR/claude-plugins-official" \
-            || echo "Warning: failed to clone official marketplace."
+# Register marketplaces and install plugins via the `claude plugin` CLI. This
+# lets Claude Code track everything correctly (known_marketplaces.json /
+# installed_plugins.json / marketplaces/ / cache/), unlike a raw git clone which
+# Claude does not recognize. Every command is idempotent — re-adding a
+# marketplace or re-installing a plugin is a safe no-op — and best-effort, so a
+# transient network failure warns instead of aborting the whole install.
+#
+# Runs AFTER sync_local_config so the declarative settings.json (with its
+# enabledPlugins + extraKnownMarketplaces blocks) is already in place before the
+# CLI installs — otherwise the settings copy would clobber what the CLI writes.
+setup_plugins() {
+    if [ ! -x "$CLAUDE_BIN" ]; then
+        echo "Claude binary not found at $CLAUDE_BIN. Skipping marketplace/plugin setup."
+        return 0
     fi
-else
-    echo "Git not installed. Skipping plugin clone."
-fi
+    for market in "${CLAUDE_MARKETPLACES[@]}"; do
+        echo "Registering marketplace: $market"
+        "$CLAUDE_BIN" plugin marketplace add "$market" \
+            || echo "Warning: failed to add marketplace $market."
+    done
+    for plugin in "${CLAUDE_PLUGINS[@]}"; do
+        echo "Installing plugin: $plugin"
+        "$CLAUDE_BIN" plugin install "$plugin" --scope user \
+            || echo "Warning: failed to install plugin $plugin."
+    done
+}
 
 # Sync local Claude config files to ~/.claude/
 sync_local_config() {
@@ -79,13 +101,13 @@ sync_local_config() {
         echo "  Installed commands"
     fi
 
-    if [ -d "$config_source/plugins" ]; then
-        mkdir -p "$claude_home/plugins"
-        cp -r "$config_source/plugins"/* "$claude_home/plugins/"
-        echo "  Installed plugins"
-    fi
+    # NB: ~/.claude/plugins is intentionally NOT copied from the repo. It is
+    # runtime state that Claude Code manages (with machine-specific absolute
+    # paths) via the `claude plugin` CLI above. Copying a checked-in copy over
+    # it would clobber known_marketplaces.json / installed_plugins.json.
 
     echo "Local Claude config synced successfully."
 }
 
 sync_local_config
+setup_plugins
