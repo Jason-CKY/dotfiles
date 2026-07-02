@@ -17,12 +17,13 @@ if ! command -v node &> /dev/null; then
     exit 0
 fi
 
-# Install or update Claude Code via the official installer
+# Install or update Claude Code to the latest version via the official installer.
+# Docs: https://code.claude.com/docs/en/setup
 if [ -x "$CLAUDE_BIN" ]; then
-    echo "Claude Code already installed at $CLAUDE_BIN ($("$CLAUDE_BIN" --version 2>/dev/null))."
-    echo "Run 'claude update' to upgrade."
+    echo "Claude Code found at $CLAUDE_BIN ($("$CLAUDE_BIN" --version 2>/dev/null)). Updating to latest..."
+    "$CLAUDE_BIN" update || echo "Warning: 'claude update' failed; keeping the installed version."
 else
-    echo "Installing Claude Code via official installer..."
+    echo "Installing latest Claude Code via official installer..."
     curl -fsSL https://claude.ai/install.sh | bash
 fi
 
