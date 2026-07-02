@@ -73,5 +73,8 @@ $SCRIPT_DIR/scripts/install-opencode.sh
 echo "Running Codex CLI installation script..."
 $SCRIPT_DIR/scripts/install-codex.sh
 
+echo "Running Starship prompt installation script..."
+$SCRIPT_DIR/scripts/install-starship.sh
+
 echo "Script finished. All components are configured."
 
