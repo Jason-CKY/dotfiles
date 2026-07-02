@@ -63,11 +63,11 @@ sync_local_config() {
     fi
 
     if [ -d "$config_source/skills" ]; then
-        mkdir -p "$claude_home/skills"
-        for skill in "$config_source/skills"/*; do
-            [ -d "$skill" ] && cp -r "$skill" "$claude_home/skills/"
-        done
-        echo "  Installed skills"
+        # Exact mirror: wipe first so skills removed from this repo are also
+        # removed here. OpenCode, Pi, and Codex all symlink to this dir.
+        rm -rf "$claude_home/skills"
+        cp -r "$config_source/skills" "$claude_home/skills"
+        echo "  Installed skills (mirrored)"
     fi
 
     if [ -d "$config_source/commands" ]; then
