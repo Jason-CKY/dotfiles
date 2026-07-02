@@ -19,25 +19,34 @@ else
     fi
 fi
 
-# Install n for Node.js management (Idempotent: checks if n is installed globally)
-if ! command -v n &> /dev/null; then
-    echo "Installing n..."
-    NODE_OPTIONS="" npm install -g n
-else
-    echo "n is already installed."
-fi
-
-# Configure n directory. `n` reads N_PREFIX to decide where to install Node, so
-# export it here too (install.sh sources shell/.exports, but this script must
-# also work when run standalone, where that export is absent).
+# `n` installs Node into N_PREFIX. Export it so n (and the rest of this script)
+# agree on the location even when run standalone (install.sh sources
+# shell/.exports, but this script must also work on its own).
 export N_PREFIX="$HOME/.n"
+N_BIN="$N_PREFIX/bin/n"
 
-if [ ! -d "$N_PREFIX" ]; then
-    echo "Creating n directory..."
-    mkdir -p "$N_PREFIX"
+# Bootstrap `n` directly from source. `n` is a standalone bash script, so this
+# needs neither an existing Node nor npm. That matters because the system's
+# node/npm may be missing or broken (e.g. a stray `/usr/local/bin/node -> bun`
+# symlink shadowing the real binary makes apt's npm crash). Bootstrapping via
+# curl sidesteps that entirely.
+if [ ! -x "$N_BIN" ]; then
+    echo "Bootstrapping n (standalone, no npm required)..."
+    mkdir -p "$N_PREFIX/bin"
+    curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n -o "$N_BIN"
+    chmod +x "$N_BIN"
+else
+    echo "n is already installed at $N_BIN."
 fi
 
-"$NPM_GLOBAL_DIR/bin/n" install 24
+# Install/activate the desired Node.js version into N_PREFIX.
+echo "Installing Node.js 24 via n..."
+"$N_BIN" install 24
+
+# Put the freshly installed Node/npm first on PATH for the rest of this run so
+# every later command (and install-npm-packages.sh) uses them, not the system's.
+export PATH="$N_PREFIX/bin:$PATH"
+echo "Using node $(node --version) / npm $(npm --version)"
 
 echo "Running npm package installation script..."
 "$SCRIPT_DIR/install-npm-packages.sh" "$N_PREFIX/bin/npm"

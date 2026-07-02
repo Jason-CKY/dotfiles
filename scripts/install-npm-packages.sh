@@ -31,9 +31,11 @@ ensure_npm_package() {
 
     # 1. Resolve "latest" to a specific version number if requested
     if [ "$target_version" == "latest" ]; then
-        # 'npm view' fetches the latest version number from the registry
+        # Use the explicit $NPM_CMD (not a bare `npm`) so version resolution uses
+        # the same Node-managed npm we install with, regardless of PATH order or
+        # a broken system npm shadowing it.
         # We assume internet access is available since we are in an install script.
-        target_version=$(npm view "$package_name" version)
+        target_version=$("$NPM_CMD" view "$package_name" version)
         echo "  Resolved 'latest' to: $target_version"
     fi
 

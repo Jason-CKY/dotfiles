@@ -10,6 +10,7 @@ source "$SCRIPT_DIR/lib/common.sh"
 update_if_needed nano npm
 
 # Install packages
+install_if_missing zsh
 install_if_missing nano
 install_if_missing npm
 install_if_missing openssl
@@ -21,3 +22,8 @@ install_if_missing fd-find
 # Symlink fdfind to fd for convenience
 mkdir -p ~/.local/bin
 ln -sf /usr/bin/fdfind ~/.local/bin/fd
+
+# Note: zsh is installed so the package is present, but we deliberately do NOT
+# run `chsh` to change the default login shell. Changing it adds a password
+# prompt and is unnecessary — the config works in whatever shell you launch.
+# To make zsh your default login shell manually: chsh -s "$(command -v zsh)"

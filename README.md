@@ -12,7 +12,7 @@ checking for existing installations and configurations before making changes.
 
 The orchestrator waits for any apt/dpkg locks to clear, then runs each setup
 script in order. After it finishes, restart your terminal or run
-`source ~/.profile` to load the new shell configuration.
+`source ~/.zshrc` to load the new shell configuration.
 
 > For a deeper reference (architecture, conventions, key configuration values),
 > see [`CLAUDE.md`](CLAUDE.md). To add a new setup script, see
@@ -24,10 +24,10 @@ script in order. After it finishes, restart your terminal or run
 
 | Step | Script | What it does |
 |------|--------|--------------|
-| 1 | `setup-dotfiles.sh` | Link/copy configs (`.bashrc`, `.profile`, `.npmrc`, `.bunfig.toml`, `uv.toml`) into `$HOME` |
+| 1 | `setup-dotfiles.sh` | Link/copy configs (`.zshrc`, `.npmrc`, `.bunfig.toml`, `uv.toml`) into `$HOME`; symlink Claude skills into `~/.agents/skills` for Codex |
 | 2 | `sync-folders.sh` | Sync `bin/` and `shell/` to `~/.dotfiles` |
 | 3 | `sync-pi.sh` | Sync Pi Coding Agent config (`config/pi/agent/`) to `~/.pi` |
-| 4 | `install-packages.sh` | Install apt system packages |
+| 4 | `install-packages.sh` | Install apt system packages (incl. `zsh`) |
 | 5 | `setup-node.sh` | Set up Node.js (`n`, npm global packages, Bun) |
 | 6 | `install-pi.sh` | Install Pi Coding Agent via npm |
 | 7 | `install-claude-code.sh` | Install Claude Code CLI, skills, commands, and plugins |
@@ -48,7 +48,7 @@ script in order. After it finishes, restart your terminal or run
 ├── scripts/                # Setup/installation scripts
 │   └── lib/common.sh       #   Shared utility functions for setup scripts
 ├── config/                 # Configuration files, organized by tool
-│   ├── shell/              #   .bashrc, .profile
+│   ├── shell/              #   .zshrc
 │   ├── git/  npm/  bun/  uv/
 │   ├── claude/            #   Claude Code settings, skills, commands, plugins
 │   ├── opencode/         #   OpenCode commands, skills, plugins
@@ -60,7 +60,7 @@ script in order. After it finishes, restart your terminal or run
 └── DEVELOPER_GUIDE.md      # How to add new setup scripts
 ```
 
-Shell loading: `~/.profile` sources `~/.bashrc`, which sources
+Shell loading: `~/.zshrc` (sourced by zsh for interactive shells) sources
 `~/.dotfiles/shell/.aliases` and `~/.dotfiles/shell/.exports`.
 
 ## CLI Utilities (on PATH after setup)

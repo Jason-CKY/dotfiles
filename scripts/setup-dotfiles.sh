@@ -7,9 +7,8 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 CONFIG_DIR="$SCRIPT_DIR/../config"
 echo "Creating configuration files for dotfiles..."
 
-# Shell configurations
-cp $CONFIG_DIR/shell/.bashrc $HOME/.bashrc
-cp $CONFIG_DIR/shell/.profile $HOME/.profile
+# Shell configurations (zsh)
+cp $CONFIG_DIR/shell/.zshrc $HOME/.zshrc
 cp $SCRIPT_DIR/../shell/.aliases $HOME/.aliases
 
 # npm configuration

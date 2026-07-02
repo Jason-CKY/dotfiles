@@ -88,7 +88,7 @@ scripts/
 - `scripts/` - Setup/installation scripts (sourced from `install.sh`)
   - `scripts/lib/` - Shared utility library
 - `config/` - Configuration files organized by tool
-  - `config/shell/` - Shell configs (`.bashrc`, `.profile`)
+  - `config/shell/` - Shell config (`.zshrc`)
   - `config/npm/` - npm config (`.npmrc`)
   - `config/bun/` - Bun config (`.bunfig.toml`)
   - `config/uv/` - UV config (`uv.toml`)
@@ -105,8 +105,11 @@ scripts/
 
 ### Configuration Loading
 
-- `~/.profile` sources `~/.bashrc`
-- `~/.bashrc` sources `~/.dotfiles/shell/.aliases` and `~/.dotfiles/shell/.exports`
+- Shell config targets **zsh**. `install-packages.sh` installs the `zsh`
+  package but does **not** run `chsh` to change the default login shell (that
+  is left to the user: `chsh -s "$(command -v zsh)"`).
+- `~/.zshrc` (sourced by zsh for interactive shells) sources
+  `~/.dotfiles/shell/.aliases` and `~/.dotfiles/shell/.exports`
 
 ## Key Configurations
 
@@ -163,10 +166,14 @@ All local bins are consolidated in PATH via `shell/.exports`:
 ## Codex
 
 - The Codex CLI is installed via `install-codex.sh` using the official installer:
-  `curl -fsSL https://chatgpt.com/codex/install.sh | sh`. Idempotent: skips if
-  `codex` is already on PATH.
+  `curl -fsSL https://chatgpt.com/codex/install.sh | sh` (binary lands at
+  `~/.local/bin/codex`, home dir `~/.codex`). Idempotent: skips if `codex` is
+  already on PATH.
 - Codex shares Claude Code's skills via a symlink created by `setup-dotfiles.sh`:
-  `~/.agents/skills` → `~/.claude/skills`.
+  `~/.agents/skills` → `~/.claude/skills`. `~/.agents/skills` is Codex's
+  documented **user-level** skills location (per
+  https://developers.openai.com/codex/skills), and Codex follows the symlink
+  target when scanning for skills — so every Claude skill is available to Codex.
 
 ## Vault CLI
 
