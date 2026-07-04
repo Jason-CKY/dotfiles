@@ -281,12 +281,22 @@ All local bins are consolidated in PATH via `shell/.exports`:
 
 - `install-nerd-font.sh` installs the **JetBrainsMono Nerd Font** into
   `~/.local/share/fonts` from the official Nerd Fonts GitHub release, then runs
-  `fc-cache`. Idempotent: skips if fontconfig already reports the family
-  `JetBrainsMono Nerd Font`. Ensures `fontconfig`/`unzip` are present first.
-- **WSL caveat**: this installs the font for **Linux** apps only. Windows
-  Terminal renders using a Windows-installed font, so on WSL the script also
-  prints steps to install the font on the Windows side and select it under
-  Settings → profile → Appearance → Font face.
+  `fc-cache` (`install_font_linux`). Idempotent: skips if fontconfig already
+  reports the family `JetBrainsMono Nerd Font`. Ensures `fontconfig`/`unzip` are
+  present first.
+- **WSL**: the Linux install alone leaves icons broken because Windows Terminal
+  renders using a *Windows*-installed font. When it detects WSL
+  (`microsoft` in `/proc/version`), the script also installs the standard
+  `JetBrainsMonoNerdFont*` TTFs into the **Windows per-user fonts store**
+  (`%LOCALAPPDATA%\Microsoft\Windows\Fonts`, no admin needed) and registers them
+  under `HKCU\...\CurrentVersion\Fonts` via `reg.exe` (`install_font_windows`).
+  Idempotent: skips when the family is already registered under HKCU. It runs
+  regardless of whether the Linux install was skipped, resolves the Windows
+  profile from the registry (`HKCU\Volatile Environment` → `USERPROFILE`) mapped
+  through `wslpath`, and is best-effort (warns + prints manual steps if
+  `reg.exe`/`wslpath` are unavailable). After it runs you must **fully restart
+  Windows Terminal** and select the font under Settings → profile → Appearance →
+  Font face → `JetBrainsMono Nerd Font Mono`.
 
 ## Vault CLI
 
