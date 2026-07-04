@@ -32,13 +32,15 @@ Initialize a repository with standardized agent documentation structure followin
 │   └── skills/                 # Canonical skills location
 │       ├── auto-learn/         # Capture learnings from mistakes
 │       └── rules/              # Rule lifecycle management
-└── .pi/
-    └── skills/                 # Symlink → ../.claude/skills
+├── .pi/
+│   └── skills/                 # Symlink → ../.claude/skills
+└── .agents/
+    └── skills/                 # Symlink → ../.claude/skills (Codex)
 ```
 
 Skills live in `.claude/skills/` as the single source of truth. `.pi/skills`
-is a symlink pointing at `.claude/skills`, so Claude and Pi share the same
-skills without duplication.
+and `.agents/skills` are symlinks pointing at `.claude/skills`, so Claude, Pi,
+and Codex share the same skills without duplication.
 
 ## Step-by-Step Process
 
@@ -54,7 +56,7 @@ ls -la CLAUDE.md AGENTS.md 2>/dev/null || echo "No existing agent docs"
 ls -la .agentdocs/ 2>/dev/null || echo "No .agentdocs"
 
 # Check for existing skills
-ls -la .claude/skills/ .pi/skills/ 2>/dev/null || echo "No existing skills"
+ls -la .claude/skills/ .pi/skills/ .agents/skills/ 2>/dev/null || echo "No existing skills"
 ```
 
 ### Step 2: Detect Existing Agent Docs
@@ -111,21 +113,27 @@ cp -r ~/.claude/skills/repo-init/bundled/auto-learn/. .claude/skills/auto-learn/
 cp -r ~/.claude/skills/repo-init/bundled/rules/. .claude/skills/rules/
 ```
 
-### Step 6: Symlink .pi/skills → .claude/skills
+### Step 6: Symlink .pi/skills and .agents/skills → .claude/skills
 
-Point Pi at the same skills directory so both agents share one source of truth:
+Point Pi and Codex at the same skills directory so all agents share one source
+of truth:
 
 ```bash
 # Create .pi and symlink its skills directory to .claude/skills
 mkdir -p .pi
 rm -rf .pi/skills
 ln -s ../.claude/skills .pi/skills
+
+# Create .agents (Codex) and symlink its skills directory to .claude/skills
+mkdir -p .agents
+rm -rf .agents/skills
+ln -s ../.claude/skills .agents/skills
 ```
 
-Verify the link resolves:
+Verify the links resolve:
 
 ```bash
-ls -la .pi/skills/
+ls -la .pi/skills/ .agents/skills/
 ```
 
 ### Step 7: Create Starter Files
@@ -161,7 +169,7 @@ Replace template placeholders in CLAUDE.md with project-specific information:
 - `internal/` - [Application code]
 - `build/` - [Compiled output]
 - `.agentdocs/` - [Detailed documentation, rules, and learnings]
-- `.claude/skills/` - [Agent skills for specialized tasks (.pi/skills symlinks here)]
+- `.claude/skills/` - [Agent skills for specialized tasks (.pi/skills and .agents/skills symlink here)]
 
 ## Tech Stack
 - **Language**: [e.g., Go, TypeScript, Python]
