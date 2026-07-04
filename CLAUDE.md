@@ -115,8 +115,11 @@ scripts/
 ### Configuration Loading
 
 - Shell config targets **zsh**. `install-packages.sh` installs the `zsh`
-  package but does **not** run `chsh` to change the default login shell (that
-  is left to the user: `chsh -s "$(command -v zsh)"`).
+  package and sets zsh as the **default login shell** (via
+  `set_default_shell_zsh`), so `wsl ~` and any new login shell boot into zsh. It
+  uses `sudo chsh -s "$(command -v zsh)" "$USER"` (sudo reuses the apt
+  credentials, avoiding a login-password prompt) and first ensures the zsh path
+  is in `/etc/shells`. Idempotent: a no-op when the login shell is already zsh.
 - `~/.zshrc` (sourced by zsh for interactive shells) sources
   `~/.dotfiles/shell/.aliases` and `~/.dotfiles/shell/.exports`
 
