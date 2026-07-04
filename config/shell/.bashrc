@@ -32,6 +32,15 @@ if ! shopt -oq posix; then
     fi
 fi
 
+# --- Environment ---
+# Load environment variables (PATH, etc.) BEFORE the prompt init below, so that
+# tools installed under ~/.local/bin (e.g. starship) are discoverable by the
+# `command -v` check even in a fresh login shell whose PATH doesn't yet include
+# them (e.g. `wsl ~` from Windows Terminal).
+if [ -f "$HOME/.dotfiles/shell/.exports" ]; then
+    source "$HOME/.dotfiles/shell/.exports"
+fi
+
 # --- Prompt ---
 # Use Starship (cross-shell prompt) when available; otherwise fall back to a
 # simple built-in colored prompt.
@@ -61,11 +70,6 @@ alias l='ls -CF'
 # Load aliases
 if [ -f "$HOME/.dotfiles/shell/.aliases" ]; then
     source "$HOME/.dotfiles/shell/.aliases"
-fi
-
-# Load environment variables
-if [ -f "$HOME/.dotfiles/shell/.exports" ]; then
-    source "$HOME/.dotfiles/shell/.exports"
 fi
 
 # UV shell completion (only if uv is installed). stderr is suppressed so a uv

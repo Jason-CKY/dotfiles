@@ -119,10 +119,12 @@ scripts/
 - Shell config targets **bash**. The managed `config/shell/.bashrc` is copied
   wholesale to `~/.bashrc` by `setup-dotfiles.sh`. It is self-contained:
   interactive-shell guard, history (shared across sessions, dedup), `shopt`
-  options (`autocd`, `extglob`, `checkwinsize`), bash-completion, Starship prompt
+  options (`autocd`, `extglob`, `checkwinsize`), bash-completion, sourcing of
+  `~/.dotfiles/shell/.exports` (**before** the prompt init — so `~/.local/bin` is
+  on `PATH` and the `command -v starship` check succeeds even in a fresh login
+  shell like `wsl ~`, whose PATH doesn't otherwise include it), Starship prompt
   init (with a colored `PS1` fallback), `lesspipe`, dircolors + `ls` aliases, uv
-  bash completion, and it sources `~/.dotfiles/shell/.aliases` and
-  `~/.dotfiles/shell/.exports`.
+  bash completion, and it sources `~/.dotfiles/shell/.aliases`.
 - `install-packages.sh` ensures **bash** is the default login shell (via
   `set_default_shell_bash`) and **removes the `zsh` package** (via `remove_zsh`),
   so `wsl ~` and any new login shell boot into bash. The default-shell change
