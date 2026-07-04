@@ -27,6 +27,7 @@ This is a dotfiles repository that automates setting up a complete development e
 ./scripts/install-vault.sh      # Install HashiCorp Vault CLI (apt repo)
 ./scripts/install-claude-code.sh # Install Claude Code CLI and skills
 ./scripts/install-codex.sh      # Install Codex CLI
+./scripts/install-herdr.sh      # Install Herdr agent multiplexer + integrations
 ./scripts/install-nerd-font.sh  # Install JetBrainsMono Nerd Font (if missing)
 ./scripts/install-starship.sh   # Install Starship cross-shell prompt
 ```
@@ -62,6 +63,7 @@ install.sh
   ├── install-claude-code.sh (Claude Code CLI and skills)
   ├── install-opencode.sh (OpenCode CLI via official installer)
   ├── install-codex.sh (Codex CLI)
+  ├── install-herdr.sh (Herdr agent multiplexer + agent integrations)
   ├── install-nerd-font.sh (JetBrainsMono Nerd Font, for the prompt glyphs)
   └── install-starship.sh (Starship cross-shell prompt)
 ```
@@ -115,8 +117,11 @@ scripts/
 ### Configuration Loading
 
 - Shell config targets **zsh**. `install-packages.sh` installs the `zsh`
-  package but does **not** run `chsh` to change the default login shell (that
-  is left to the user: `chsh -s "$(command -v zsh)"`).
+  package and sets zsh as the **default login shell** (via
+  `set_default_shell_zsh`), so `wsl ~` and any new login shell boot into zsh. It
+  uses `sudo chsh -s "$(command -v zsh)" "$USER"` (sudo reuses the apt
+  credentials, avoiding a login-password prompt) and first ensures the zsh path
+  is in `/etc/shells`. Idempotent: a no-op when the login shell is already zsh.
 - `~/.zshrc` (sourced by zsh for interactive shells) sources
   `~/.dotfiles/shell/.aliases` and `~/.dotfiles/shell/.exports`
 
@@ -215,6 +220,30 @@ All local bins are consolidated in PATH via `shell/.exports`:
   documented **user-level** skills location (per
   https://developers.openai.com/codex/skills), and Codex follows the symlink
   target when scanning for skills — so every Claude skill is available to Codex.
+
+## Herdr
+
+- Herdr is a terminal-native **agent multiplexer** ("tmux for coding agents"): a
+  single ~10MB Rust binary with real panes, at-a-glance agent state, and
+  ssh-from-anywhere control. Docs: https://herdr.dev/ — Repo:
+  https://github.com/ogulcancelik/herdr
+- Installed/updated to the **latest** on every run via `install-herdr.sh`: if
+  `~/.local/bin/herdr` already exists the script runs `herdr update`; otherwise
+  it installs via the official installer (`curl -fsSL https://herdr.dev/install.sh
+  | sh`). The installer honours `HERDR_INSTALL_DIR` (set to `~/.local/bin`, already
+  on PATH) and never edits shell rc files, so no `--no-modify-path` flag is needed.
+- **Agent integrations**: after install, the script runs `herdr integration
+  install <agent>` for `claude`, `codex`, `opencode`, and `pi` (see the
+  `HERDR_INTEGRATIONS` array). These give each agent native session restore /
+  semantic agent-status detection inside herdr panes. Every call is idempotent
+  (no-op when already installed) and best-effort per agent, so a missing agent or
+  transient failure warns instead of aborting the run.
+- **Agent skill**: `config/claude/skills/herdr/SKILL.md` is part of the canonical
+  skills set, so it is available to every agent (Claude, OpenCode, Pi, Codex) via
+  the shared skills dir. It is the upstream herdr `SKILL.md` verbatim — it teaches
+  an agent to drive the `herdr` CLI (workspaces/tabs/panes, spawn agents, wait for
+  output/status) when running inside a herdr pane (`HERDR_ENV=1`), and to stop if
+  that env var is not set.
 
 ## Starship Prompt
 

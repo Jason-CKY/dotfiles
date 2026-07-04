@@ -73,6 +73,9 @@ $SCRIPT_DIR/scripts/install-opencode.sh
 echo "Running Codex CLI installation script..."
 $SCRIPT_DIR/scripts/install-codex.sh
 
+echo "Running Herdr installation script..."
+$SCRIPT_DIR/scripts/install-herdr.sh
+
 echo "Running Nerd Font installation script..."
 $SCRIPT_DIR/scripts/install-nerd-font.sh
 
