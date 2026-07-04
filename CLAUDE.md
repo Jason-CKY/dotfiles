@@ -288,7 +288,15 @@ All local bins are consolidated in PATH via `shell/.exports`:
     `/usr/share/keyrings/hashicorp-keyring.gpg`
   - Repo list → `/etc/apt/sources.list.d/hashicorp.list`
     (uses `${VERSION_CODENAME}` from `/etc/os-release`)
-- Idempotent: skips the key/repo/`apt-get update` if already present.
+- Idempotent, and **self-healing**: it compares the repo list file against the
+  exact desired `deb` line and **rewrites it when stale** (e.g. a leftover
+  `${VERSION_CODENAME}` from before an OS upgrade, or a different `signed-by`
+  keyring path from an older setup) rather than trusting mere file existence.
+  It then runs `apt_get update` whenever the repo line changed **or** `vault`
+  is still missing — so apt's package index is always refreshed *before* the
+  install. (A prior version gated the `apt-get update` behind "repo file
+  doesn't exist", so a pre-existing but stale/unindexed repo made
+  `apt-get install vault` fail with "Unable to locate package vault".)
 - Authentication is **not** automated — log in manually after setup with
   `vault login <token>` (token copied from the Vault UI).
 
