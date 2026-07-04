@@ -154,6 +154,10 @@ All local bins are consolidated in PATH via `shell/.exports`:
 - Settings: `config/pi/agent/settings.json` → `~/.pi/agent/settings.json`
 - Skills: `~/.pi/agent/skills/` is a **symlink** to `~/.claude/skills/` (the
   canonical set), created by `sync-pi.sh`. Pi has no separate skills in the repo.
+- `sync-pi.sh` also creates `~/.pi/agent/extensions/` so that
+  `herdr integration install pi` (run later by `install-herdr.sh`) has a target
+  to drop its agent-state extension into — herdr aborts the pi integration with
+  "pi extension directory not found" if that dir is missing.
 
 ### Pi MCP Adapter
 

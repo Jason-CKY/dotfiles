@@ -15,3 +15,9 @@ cp -r "$CONFIG_DIR/pi/"* "$HOME/.pi/"
 mkdir -p "$HOME/.pi/agent"
 rm -rf "$HOME/.pi/agent/skills"
 ln -sfn "$HOME/.claude/skills" "$HOME/.pi/agent/skills"
+
+# Ensure Pi's extensions directory exists so `herdr integration install pi`
+# (run later by install-herdr.sh) can drop in its agent-state extension.
+# Herdr aborts the pi integration with "pi extension directory not found" if
+# this dir is missing, even when Pi itself is installed.
+mkdir -p "$HOME/.pi/agent/extensions"
