@@ -12,7 +12,7 @@ checking for existing installations and configurations before making changes.
 
 The orchestrator waits for any apt/dpkg locks to clear, then runs each setup
 script in order. After it finishes, restart your terminal or run
-`source ~/.zshrc` to load the new shell configuration.
+`source ~/.bashrc` to load the new shell configuration.
 
 > For a deeper reference (architecture, conventions, key configuration values),
 > see [`CLAUDE.md`](CLAUDE.md). To add a new setup script, see
@@ -24,10 +24,10 @@ script in order. After it finishes, restart your terminal or run
 
 | Step | Script | What it does |
 |------|--------|--------------|
-| 1 | `setup-dotfiles.sh` | Link/copy configs (`.zshrc`, `.npmrc`, `.bunfig.toml`, `uv.toml`) into `$HOME`; sync `~/.claude/skills` as an exact mirror and symlink OpenCode/Codex skills to it |
+| 1 | `setup-dotfiles.sh` | Link/copy configs (`.bashrc`, `.npmrc`, `.bunfig.toml`, `uv.toml`) into `$HOME`; sync `~/.claude/skills` as an exact mirror and symlink OpenCode/Codex skills to it |
 | 2 | `sync-folders.sh` | Sync `bin/` and `shell/` to `~/.dotfiles` |
 | 3 | `sync-pi.sh` | Sync Pi Coding Agent config (`config/pi/agent/`) to `~/.pi`; symlink `~/.pi/agent/skills` to `~/.claude/skills` |
-| 4 | `install-packages.sh` | Install apt system packages (incl. `zsh`) |
+| 4 | `install-packages.sh` | Install apt system packages; set bash as the default login shell and remove `zsh` |
 | 5 | `setup-node.sh` | Set up Node.js (`n`, npm global packages, Bun) |
 | 6 | `install-pi.sh` | Install Pi Coding Agent via npm |
 | 7 | `install-claude-code.sh` | Install Claude Code CLI, skills, commands, and plugins |
@@ -48,7 +48,7 @@ script in order. After it finishes, restart your terminal or run
 ├── scripts/                # Setup/installation scripts
 │   └── lib/common.sh       #   Shared utility functions for setup scripts
 ├── config/                 # Configuration files, organized by tool
-│   ├── shell/              #   .zshrc
+│   ├── shell/              #   .bashrc
 │   ├── git/  npm/  bun/  uv/
 │   ├── claude/            #   Claude Code settings, canonical skills, commands, plugins
 │   ├── opencode/         #   OpenCode commands, plugins (skills symlink to Claude's)
@@ -60,7 +60,7 @@ script in order. After it finishes, restart your terminal or run
 └── DEVELOPER_GUIDE.md      # How to add new setup scripts
 ```
 
-Shell loading: `~/.zshrc` (sourced by zsh for interactive shells) sources
+Shell loading: `~/.bashrc` (sourced by bash for interactive shells) sources
 `~/.dotfiles/shell/.aliases` and `~/.dotfiles/shell/.exports`.
 
 ## CLI Utilities (on PATH after setup)

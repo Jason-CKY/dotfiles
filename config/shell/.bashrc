@@ -1,33 +1,44 @@
-# ~/.zshrc: executed by zsh(1) for interactive shells.
+# ~/.bashrc: executed by bash(1) for interactive shells.
 
 # If not running interactively, don't do anything
-[[ $- != *i* ]] && return
+case $- in
+    *i*) ;;
+      *) return;;
+esac
 
 # --- History ---
-HISTFILE="$HOME/.zsh_history"
+HISTFILE="$HOME/.bash_history"
 HISTSIZE=10000
-SAVEHIST=10000
-setopt APPEND_HISTORY        # append rather than overwrite the history file
-setopt SHARE_HISTORY         # share history across concurrent sessions
-setopt HIST_IGNORE_ALL_DUPS  # don't record duplicate commands
-setopt HIST_IGNORE_SPACE     # don't record commands starting with a space
+HISTFILESIZE=10000
+# ignoreboth = ignore duplicate lines and lines starting with a space;
+# erasedups = drop all previous duplicates of a command from the history.
+HISTCONTROL=ignoreboth:erasedups
+shopt -s histappend          # append rather than overwrite the history file
+# Share history across concurrent sessions: after each command, append this
+# session's new entries and re-read anything other sessions have added.
+PROMPT_COMMAND="history -a; history -n; ${PROMPT_COMMAND:-}"
 
 # --- Shell options ---
-setopt AUTO_CD               # `cd` by typing a directory name
-setopt EXTENDED_GLOB         # richer globbing
-setopt INTERACTIVE_COMMENTS  # allow `#` comments in interactive shells
+shopt -s autocd 2>/dev/null  # `cd` by typing a directory name (bash 4+)
+shopt -s extglob             # richer (extended) globbing
+shopt -s checkwinsize        # keep LINES/COLUMNS current after each command
 
 # --- Completion ---
-autoload -Uz compinit && compinit
+if ! shopt -oq posix; then
+    if [ -f /usr/share/bash-completion/bash_completion ]; then
+        . /usr/share/bash-completion/bash_completion
+    elif [ -f /etc/bash_completion ]; then
+        . /etc/bash_completion
+    fi
+fi
 
 # --- Prompt ---
 # Use Starship (cross-shell prompt) when available; otherwise fall back to a
-# simple built-in prompt.
+# simple built-in colored prompt.
 if command -v starship >/dev/null 2>&1; then
-    eval "$(starship init zsh)"
+    eval "$(starship init bash)"
 else
-    autoload -Uz colors && colors
-    PROMPT='%F{green}%n@%m%f:%F{blue}%~%f %# '
+    PS1='\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
 fi
 
 # make less more friendly for non-text input files, see lesspipe(1)
@@ -61,7 +72,7 @@ fi
 # hiccup (e.g. a config key from a newer uv than the one installed) can never
 # spam an error on every new shell.
 if command -v uv >/dev/null 2>&1; then
-    eval "$(uv generate-shell-completion zsh 2>/dev/null)"
+    eval "$(uv generate-shell-completion bash 2>/dev/null)"
 fi
 
 unset ANTHROPIC_AUTH_TOKEN

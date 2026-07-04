@@ -94,7 +94,7 @@ scripts/
 - `scripts/` - Setup/installation scripts (sourced from `install.sh`)
   - `scripts/lib/` - Shared utility library
 - `config/` - Configuration files organized by tool
-  - `config/shell/` - Shell config (`.zshrc`)
+  - `config/shell/` - Shell config (`.bashrc`)
   - `config/starship/` - Starship prompt config (`starship.toml`)
   - `config/npm/` - npm config (`.npmrc`)
   - `config/bun/` - Bun config (`.bunfig.toml`)
@@ -116,13 +116,21 @@ scripts/
 
 ### Configuration Loading
 
-- Shell config targets **zsh**. `install-packages.sh` installs the `zsh`
-  package and sets zsh as the **default login shell** (via
-  `set_default_shell_zsh`), so `wsl ~` and any new login shell boot into zsh. It
-  uses `sudo chsh -s "$(command -v zsh)" "$USER"` (sudo reuses the apt
-  credentials, avoiding a login-password prompt) and first ensures the zsh path
-  is in `/etc/shells`. Idempotent: a no-op when the login shell is already zsh.
-- `~/.zshrc` (sourced by zsh for interactive shells) sources
+- Shell config targets **bash**. The managed `config/shell/.bashrc` is copied
+  wholesale to `~/.bashrc` by `setup-dotfiles.sh`. It is self-contained:
+  interactive-shell guard, history (shared across sessions, dedup), `shopt`
+  options (`autocd`, `extglob`, `checkwinsize`), bash-completion, Starship prompt
+  init (with a colored `PS1` fallback), `lesspipe`, dircolors + `ls` aliases, uv
+  bash completion, and it sources `~/.dotfiles/shell/.aliases` and
+  `~/.dotfiles/shell/.exports`.
+- `install-packages.sh` ensures **bash** is the default login shell (via
+  `set_default_shell_bash`) and **removes the `zsh` package** (via `remove_zsh`),
+  so `wsl ~` and any new login shell boot into bash. The default-shell change
+  runs *before* the zsh purge so the login shell never points at a removed
+  binary. It uses `sudo chsh -s "$(command -v bash)" "$USER"` (sudo reuses the
+  apt credentials, avoiding a login-password prompt) and first ensures the bash
+  path is in `/etc/shells`. Both steps are idempotent.
+- `~/.bashrc` (sourced by bash for interactive shells) sources
   `~/.dotfiles/shell/.aliases` and `~/.dotfiles/shell/.exports`
 
 ## Key Configurations
@@ -251,19 +259,15 @@ All local bins are consolidated in PATH via `shell/.exports`:
 
 ## Starship Prompt
 
-- Starship is the shell prompt, shared across **both bash and zsh**. Installed
+- Starship is the shell prompt for **bash**. Installed
   via `install-starship.sh` using the official installer
   (`curl -sS https://starship.rs/install.sh | sh -s -- -y -b ~/.local/bin`).
   Idempotent: skips if `starship` is already on PATH.
 - Config: `config/starship/starship.toml` → `~/.config/starship.toml` (copied by
   `setup-dotfiles.sh`). Based on the official **Gruvbox Rainbow** preset, trimmed
   to the tools in use.
-- Shell init:
-  - zsh: the managed `.zshrc` runs `eval "$(starship init zsh)"` when starship is
-    on PATH (falls back to the old built-in `PROMPT` otherwise).
-  - bash: `setup-dotfiles.sh` appends an `eval "$(starship init bash)"` block to
-    `~/.bashrc` idempotently (guarded by a `grep`, so it never clobbers the
-    user's bashrc or duplicates on re-runs).
+- Shell init: the managed `.bashrc` runs `eval "$(starship init bash)"` when
+  starship is on PATH (falls back to a built-in colored `PS1` otherwise).
 - Prompt segments: OS + username, current path, git branch, a minimal git status
   (a single yellow ● when the working tree has any uncommitted change — via the
   `custom.git_dirty` module — plus ⇡/⇣ ahead/behind arrows; nothing when clean),

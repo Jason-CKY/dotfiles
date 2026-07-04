@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Starship prompt installation (cross-shell: bash + zsh)
+# Starship prompt installation (for bash)
 
 set -euo pipefail
 

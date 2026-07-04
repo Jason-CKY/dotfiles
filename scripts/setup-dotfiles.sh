@@ -7,25 +7,15 @@ SCRIPT_DIR="$(dirname "${BASH_SOURCE[0]}")"
 CONFIG_DIR="$SCRIPT_DIR/../config"
 echo "Creating configuration files for dotfiles..."
 
-# Shell configurations (zsh)
-cp $CONFIG_DIR/shell/.zshrc $HOME/.zshrc
-cp $SCRIPT_DIR/../shell/.aliases $HOME/.aliases
+# Shell configuration (bash). The managed .bashrc is self-contained: it sets up
+# history/completion, initializes Starship, and sources the shared aliases and
+# exports from ~/.dotfiles/shell.
+cp "$CONFIG_DIR/shell/.bashrc" "$HOME/.bashrc"
+cp "$SCRIPT_DIR/../shell/.aliases" "$HOME/.aliases"
 
-# Starship prompt config (shared by bash + zsh)
+# Starship prompt config (initialized by the managed .bashrc)
 mkdir -p "$HOME/.config"
 cp "$CONFIG_DIR/starship/starship.toml" "$HOME/.config/starship.toml"
-
-# The managed .zshrc initializes Starship for zsh. For bash we append the init
-# to ~/.bashrc idempotently (guarded by a grep) so we never clobber the user's
-# existing bash config or add duplicate lines on repeated runs.
-BASHRC="$HOME/.bashrc"
-if ! { [ -f "$BASHRC" ] && grep -q "starship init bash" "$BASHRC"; }; then
-    {
-        echo ''
-        echo '# Initialize Starship prompt (added by dotfiles)'
-        echo 'command -v starship >/dev/null 2>&1 && eval "$(starship init bash)"'
-    } >> "$BASHRC"
-fi
 
 # npm configuration
 cp $CONFIG_DIR/npm/.npmrc $HOME/.npmrc
